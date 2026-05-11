@@ -1,5 +1,5 @@
 altgraph==0.17.4
-appdirs==1.4.4
+appdirs==1.4	.4
 argcomplete==3.6.3
 blinker==1.9.0
 buildozer==1.5.0
@@ -41,11 +41,6 @@ imageio-ffmpeg==0.6.0
 importlib_resources==7.1.0
 itsdangerous==2.2.0
 Jinja2==3.1.6
-Kivy==2.3.1
-Kivy-Garden==0.1.5
-kivy_deps.angle==0.4.0
-kivy_deps.glew==0.3.1
-kivy_deps.sdl2==0.8.0
 kivymd==1.2.0
 kiwisolver==1.4.9
 lxml==6.0.2
