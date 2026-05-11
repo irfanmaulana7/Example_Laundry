@@ -55,9 +55,16 @@ def load_user(user_id):
 def layout(content):
     return f"""
     <html>
+
     <head>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+    content="width=device-width,
+    initial-scale=1,
+    maximum-scale=1,
+    user-scalable=no">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -67,24 +74,67 @@ def layout(content):
 
     <body class="bg-slate-950 text-white">
 
-    <div class="md:flex">
+    <div class="min-h-screen md:flex">
 
-    <div class="w-full md:w-64 md:h-screen bg-slate-900 p-6 md:fixed">
-        <img src="/static/logo.png" class="w-32 mb-8">
+    <!-- MOBILE TOPBAR -->
+    <div class="md:hidden bg-slate-900 p-4 flex justify-between items-center border-b border-slate-800 sticky top-0 z-50">
+        <img src="/static/logo.png" class="w-24">
 
-        <div class="flex md:block gap-4 text-sm md:text-base">
-            <a href="/dashboard">Dashboard</a>
-            <a href="/member">Member</a>
-            <a href="/transaksi">Transaksi</a>
-            <a href="/logout">Logout</a>
+        <button onclick="toggleMenu()" class="text-2xl">
+            ☰
+        </button>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar"
+    class="hidden md:block w-full md:w-64 bg-slate-900 md:h-screen p-6 md:fixed border-r border-slate-800 z-40">
+
+        <img src="/static/logo.png"
+        class="w-32 mx-auto mb-8">
+
+        <div class="flex flex-col gap-4 text-center md:text-left">
+
+            <a href="/dashboard"
+            class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl transition">
+            Dashboard
+            </a>
+
+            <a href="/member"
+            class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl transition">
+            Member
+            </a>
+
+            <a href="/transaksi"
+            class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl transition">
+            Transaksi
+            </a>
+
+            <a href="/logout"
+            class="bg-red-500 hover:bg-red-600 p-3 rounded-xl transition">
+            Logout
+            </a>
+
         </div>
     </div>
 
-    <div class="md:ml-64 p-4 md:p-8 w-full">
-    {content}
+    <!-- CONTENT -->
+    <div class="w-full md:ml-64 p-3 md:p-8 overflow-x-auto">
+        {content}
     </div>
 
     </div>
+
+    <script>
+    function toggleMenu() {{
+        const sidebar = document.getElementById("sidebar");
+
+        if(sidebar.classList.contains("hidden")) {{
+            sidebar.classList.remove("hidden");
+        }} else {{
+            sidebar.classList.add("hidden");
+        }}
+    }}
+    </script>
 
     </body>
     </html>
@@ -121,7 +171,7 @@ def dashboard():
     content = f"""
     <h1 class="text-2xl mb-6">Dashboard</h1>
 
-    <div class="grid grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-slate-800 p-4 rounded">Total<br>{total}</div>
         <div class="bg-slate-800 p-4 rounded">Proses<br>{proses}</div>
         <div class="bg-slate-800 p-4 rounded">Selesai<br>{selesai}</div>
@@ -172,7 +222,7 @@ def member():
     content = f"""
     <h1 class="text-2xl mb-4">Member</h1>
 
-    <form method="POST" action="/add_member" class="grid grid-cols-4 gap-3 mb-6">
+    <form method="POST" action="/add_member" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
         <input name="kode" placeholder="ID Member (ZEE001)" class="p-2 bg-slate-800 rounded">
         <input name="nama" placeholder="Nama" class="p-2 bg-slate-800 rounded">
         <input name="hp" placeholder="HP" class="p-2 bg-slate-800 rounded">
@@ -189,10 +239,23 @@ def member():
         <button class="bg-green-500 px-4 rounded">Top Up</button>
     </form>
 
-    <table class="w-full bg-slate-800">
-    <tr><th>Kode</th><th>Nama</th><th>HP</th><th>Alamat</th><th>Saldo</th><th>QR</th><th>Kartu</th></tr>
+    <div class="overflow-x-auto">
+    <table class="w-full bg-slate-800 text-sm rounded-xl overflow-hidden">
+
+    <tr class="bg-slate-700">
+        <th class="p-2">Kode</th>
+        <th class="p-2">Nama</th>
+        <th class="p-2">HP</th>
+        <th class="p-2">Alamat</th>
+        <th class="p-2">Saldo</th>
+        <th class="p-2">QR</th>
+        <th class="p-2">Kartu</th>
+    </tr>
+
     {rows}
+
     </table>
+    </div>
     """
     return layout(content)
 
@@ -279,7 +342,7 @@ def transaksi():
     <div id="reader" style="width:300px;"></div>
     </div>
 
-    <form method="POST" action="/add_transaksi" class="grid grid-cols-4 gap-3 mb-6">
+    <form method="POST" action="/add_transaksi" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
 
     <div>
         <label>Member</label>
@@ -318,9 +381,22 @@ def transaksi():
     <button class="col-span-4 bg-indigo-500 p-2 rounded">Tambah</button>
     </form>
 
-    <table class="w-full bg-slate-800">
+    <div class="overflow-x-auto rounded-xl">
+
+    <table class="w-full bg-slate-800 text-sm min-w-max">
+
+    <tr class="bg-slate-700">
+         <th class="p-2">Nama</th>
+         <th class="p-2">Layanan</th>
+         <th class="p-2">Total</th>
+         <th class="p-2">Status</th>
+    </tr>
+
     {rows}
+
     </table>
+
+    </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {{
