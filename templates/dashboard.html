@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-slate-100">
+
+<div class="flex">
+
+<!-- SIDEBAR -->
+<div class="w-60 bg-white h-screen p-5">
+<h2 class="text-xl font-bold mb-6">🧺 Laundry</h2>
+<a href="/dashboard">Dashboard</a><br>
+<a href="/logout">Logout</a>
+</div>
+
+<!-- MAIN -->
+<div class="p-6 w-full">
+
+<h1 class="text-2xl mb-4">Dashboard</h1>
+
+<!-- KPI -->
+<div class="grid grid-cols-4 gap-4">
+
+<div class="bg-white p-4 rounded">
+Total<br><b>{{total}}</b>
+</div>
+
+<div class="bg-white p-4 rounded">
+Proses<br><b>{{proses}}</b>
+</div>
+
+<div class="bg-white p-4 rounded">
+Selesai<br><b>{{selesai}}</b>
+</div>
+
+<div class="bg-white p-4 rounded">
+Omzet<br><b>Rp {{omzet}}</b>
+</div>
+
+</div>
+
+<br>
+
+<!-- FORM -->
+<form method="POST" action="/add" class="bg-white p-4 rounded mb-4">
+<input name="nama" placeholder="Nama">
+<input name="layanan" placeholder="Layanan">
+<input name="berat" placeholder="Berat">
+<input name="total" placeholder="Total">
+<button>Tambah</button>
+</form>
+
+<!-- TABLE -->
+<div class="bg-white p-4 rounded">
+<table class="w-full">
+<tr>
+<th>Nama</th><th>Layanan</th><th>Status</th><th>Aksi</th>
+</tr>
+
+{% for d in data %}
+<tr>
+<td>{{d.nama}}</td>
+<td>{{d.layanan}}</td>
+<td>{{d.status}}</td>
+<td>
+<a href="/update/{{d.id}}/Dicuci">Cuci</a>
+<a href="/update/{{d.id}}/Setrika">Setrika</a>
+<a href="/update/{{d.id}}/Packing">Packing</a>
+<a href="/update/{{d.id}}/Selesai">Done</a>
+</td>
+</tr>
+{% endfor %}
+
+</table>
+</div>
+
+</div>
+</div>
+
+</body>
+</html>

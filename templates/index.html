@@ -1,0 +1,218 @@
+from flask import Flask, request, redirect, url_for
+from flask import render_template_string
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from sqlalchemy import func
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///laundry.db'
+app.config['SECRET_KEY'] = 'secret-key'
+
+db = SQLAlchemy(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+# ================= MODEL =================
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100))
+    password = db.Column(db.String(100))
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nama = db.Column(db.String(100))
+    layanan = db.Column(db.String(100))
+    berat = db.Column(db.Float)
+    total = db.Column(db.Integer)
+    status = db.Column(db.String(50), default="Diterima")
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+# ================= LOGIN =================
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user = User.query.filter_by(username=request.form["username"]).first()
+        if user and user.password == request.form["password"]:
+            login_user(user)
+            return redirect("/dashboard")
+
+    return render_template_string("""
+    <body style="font-family:Arial;background:#0f172a;color:white;display:flex;justify-content:center;align-items:center;height:100vh">
+        <form method="POST" style="background:#1e293b;padding:20px;border-radius:10px">
+            <h3>Login Laundry SaaS</h3>
+            <input name="username" placeholder="username"><br><br>
+            <input name="password" type="password" placeholder="password"><br><br>
+            <button>Login</button>
+        </form>
+    </body>
+    """)
+
+
+# ================= DASHBOARD =================
+@app.route("/dashboard")
+@login_required
+def dashboard():
+
+    data = Order.query.all()
+
+    total = Order.query.count()
+    selesai = Order.query.filter_by(status="Selesai").count()
+    proses = Order.query.filter(Order.status != "Selesai").count()
+    omzet = db.session.query(func.sum(Order.total)).scalar() or 0
+
+    return render_template_string("""
+
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body style="background:#f8fafc;font-family:Arial">
+
+<div style="display:flex">
+
+<!-- SIDEBAR -->
+<div style="width:220px;background:white;height:100vh;padding:20px;position:fixed">
+<h2>🧺 Laundry</h2>
+<br>
+<a href="/dashboard">Dashboard</a><br>
+<a href="/logout">Logout</a>
+</div>
+
+<!-- MAIN -->
+<div style="margin-left:240px;padding:20px;width:100%">
+
+<h1>Dashboard SaaS Laundry</h1>
+
+<!-- KPI -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+
+<div style="background:white;padding:15px;border-radius:10px">
+Total Order<br><b>{{total}}</b>
+</div>
+
+<div style="background:white;padding:15px;border-radius:10px">
+Proses<br><b>{{proses}}</b>
+</div>
+
+<div style="background:white;padding:15px;border-radius:10px">
+Selesai<br><b>{{selesai}}</b>
+</div>
+
+<div style="background:white;padding:15px;border-radius:10px">
+Omzet<br><b>Rp {{omzet}}</b>
+</div>
+
+</div>
+
+<br>
+
+<!-- CHART -->
+<div style="background:white;padding:20px;border-radius:10px">
+<canvas id="chart"></canvas>
+</div>
+
+<br>
+
+<!-- TABLE -->
+<div style="background:white;padding:20px;border-radius:10px">
+
+<h3>Order</h3>
+
+<table border="1" width="100%">
+<tr>
+<th>Nama</th>
+<th>Layanan</th>
+<th>Berat</th>
+<th>Total</th>
+<th>Status</th>
+<th>Aksi</th>
+</tr>
+
+{% for d in data %}
+<tr>
+<td>{{d.nama}}</td>
+<td>{{d.layanan}}</td>
+<td>{{d.berat}}</td>
+<td>{{d.total}}</td>
+<td>{{d.status}}</td>
+<td>
+<a href="/update/{{d.id}}/Dicuci">Cuci</a>
+<a href="/update/{{d.id}}/Setrika">Setrika</a>
+<a href="/update/{{d.id}}/Packing">Packing</a>
+<a href="/update/{{d.id}}/Selesai">Done</a>
+</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+new Chart(document.getElementById("chart"), {
+    type: "line",
+    data: {
+        labels: ["Sen","Sel","Rab","Kam","Jum","Sab","Min"],
+        datasets: [{
+            label: "Omzet",
+            data: [12000,19000,15000,22000,30000,28000,35000],
+            borderColor: "#6366f1",
+            backgroundColor: "rgba(99,102,241,0.2)",
+            fill: true
+        }]
+    }
+});
+</script>
+
+</body>
+</html>
+
+""", data=data, total=total, selesai=selesai, proses=proses, omzet=omzet)
+
+
+# ================= UPDATE STATUS =================
+@app.route("/update/<int:id>/<status>")
+@login_required
+def update(id, status):
+    o = Order.query.get(id)
+    o.status = status
+    db.session.commit()
+    return redirect("/dashboard")
+
+
+# ================= LOGOUT =================
+@app.route("/logout")
+def logout():
+    logout_user()
+    return redirect("/login")
+
+
+# ================= INIT DB =================
+@app.route("/init")
+def init():
+    db.create_all()
+
+    if not User.query.filter_by(username="admin").first():
+        db.session.add(User(username="admin", password="admin"))
+
+    if Order.query.count() == 0:
+        db.session.add(Order(nama="Budi", layanan="Cuci Kering", berat=3, total=30000))
+        db.session.add(Order(nama="Ani", layanan="Setrika", berat=2, total=20000))
+
+    db.session.commit()
+    return "DB Ready"
+
+
+if __name__ == "__main__":
+    app.run(debug=True)

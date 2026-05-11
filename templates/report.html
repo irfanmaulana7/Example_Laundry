@@ -1,0 +1,19 @@
+<h2>Laporan Bulanan</h2>
+
+<h3>Total: Rp {{ total }}</h3>
+
+<table border="1">
+<tr>
+<th>Nama</th>
+<th>Layanan</th>
+<th>Total</th>
+</tr>
+
+{% for d in data %}
+<tr>
+<td>{{ d[2] }}</td>
+<td>{{ d[3] }}</td>
+<td>{{ d[5] }}</td>
+</tr>
+{% endfor %}
+</table>
