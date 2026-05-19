@@ -203,60 +203,190 @@ def dashboard():
 @app.route("/member")
 @login_required
 def member():
+
     data = Member.query.all()
 
     rows = ""
+
     for m in data:
+
         rows += f"""
-        <tr>
-        <td>{m.kode}</td>
-        <td>{m.nama}</td>
-        <td>{m.hp}</td>
-        <td>{m.alamat}</td>
-        <td>Rp {m.saldo}</td>
-        <td><img src="/qr/{m.id}" width="70"></td>
-        <td><a href="/kartu/{m.id}" target="_blank" class="text-blue-400">Lihat</a></td>
+        <tr class="border-b border-slate-700">
+
+            <td class="p-2">{m.kode}</td>
+
+            <td class="p-2">{m.nama}</td>
+
+            <td class="p-2">{m.hp}</td>
+
+            <td class="p-2">{m.alamat}</td>
+
+            <td class="p-2 text-green-400">
+                Rp {m.saldo}
+            </td>
+
+            <td class="p-2">
+                <img src="/qr/{m.id}" width="70">
+            </td>
+
+            <td class="p-2">
+                <a href="/kartu/{m.id}"
+                target="_blank"
+                class="text-blue-400">
+                Lihat
+                </a>
+            </td>
+
         </tr>
         """
 
     content = f"""
-    <h1 class="text-2xl mb-4">Member</h1>
 
-    <form method="POST" action="/add_member" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
-        <input name="kode" placeholder="ID Member (ZEE001)" class="p-2 bg-slate-800 rounded">
-        <input name="nama" placeholder="Nama" class="p-2 bg-slate-800 rounded">
-        <input name="hp" placeholder="HP" class="p-2 bg-slate-800 rounded">
-        <input name="alamat" placeholder="Alamat" class="p-2 bg-slate-800 rounded">
-        <input name="saldo" placeholder="Saldo" class="p-2 bg-slate-800 rounded">
-        <button class="col-span-4 bg-indigo-500 p-2 rounded">Tambah</button>
+    <h1 class="text-2xl font-bold mb-6">
+        Member
+    </h1>
+
+    <!-- FORM MEMBER -->
+
+    <form method="POST"
+    action="/add_member"
+    class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                ID Member
+            </label>
+
+            <input
+            name="kode"
+            placeholder="ZEE001"
+            class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+        </div>
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                Nama Member
+            </label>
+
+            <input
+            name="nama"
+            placeholder="Nama Member"
+            class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+        </div>
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                Nomor HP
+            </label>
+
+            <input
+            name="hp"
+            placeholder="08xxxxxxxxxx"
+            class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+        </div>
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                Saldo
+            </label>
+
+            <input
+            name="saldo"
+            placeholder="10000"
+            class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+        </div>
+
+        <div class="space-y-1 md:col-span-2">
+
+            <label class="text-sm text-gray-300">
+                Alamat
+            </label>
+
+            <textarea
+            name="alamat"
+            rows="3"
+            placeholder="Alamat lengkap"
+            class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+
+        </div>
+
+        <button
+        class="md:col-span-2 bg-indigo-500 hover:bg-indigo-600 transition p-3 rounded-xl font-semibold">
+
+            Tambah Member
+
+        </button>
+
     </form>
 
-    <form method="POST" action="/topup" class="flex gap-2 mb-4">
-        <select name="id" class="p-2 bg-slate-800 text-white">
+    <!-- FORM TOPUP -->
+
+    <form method="POST"
+    action="/topup"
+    class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+        <select
+        name="id"
+        class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-xl">
+
             {"".join([f"<option value='{m.id}'>{m.nama}</option>" for m in data])}
+
         </select>
-        <input name="jumlah" placeholder="Top Up" class="p-2 bg-slate-800">
-        <button class="bg-green-500 px-4 rounded">Top Up</button>
+
+        <input
+        name="jumlah"
+        placeholder="Jumlah Top Up"
+        class="w-full p-3 bg-slate-800 border border-slate-700 rounded-xl">
+
+        <button
+        class="bg-green-500 hover:bg-green-600 transition p-3 rounded-xl font-semibold">
+
+            Top Up Saldo
+
+        </button>
+
     </form>
 
-    <div class="overflow-x-auto">
-    <table class="w-full bg-slate-800 text-sm rounded-xl overflow-hidden">
+    <!-- TABLE MEMBER -->
 
-    <tr class="bg-slate-700">
-        <th class="p-2">Kode</th>
-        <th class="p-2">Nama</th>
-        <th class="p-2">HP</th>
-        <th class="p-2">Alamat</th>
-        <th class="p-2">Saldo</th>
-        <th class="p-2">QR</th>
-        <th class="p-2">Kartu</th>
-    </tr>
+    <div class="overflow-x-auto rounded-xl">
 
-    {rows}
+        <table class="w-full bg-slate-800 text-sm min-w-max overflow-hidden">
 
-    </table>
+            <tr class="bg-slate-700 text-left">
+
+                <th class="p-3">Kode</th>
+
+                <th class="p-3">Nama</th>
+
+                <th class="p-3">HP</th>
+
+                <th class="p-3">Alamat</th>
+
+                <th class="p-3">Saldo</th>
+
+                <th class="p-3">QR</th>
+
+                <th class="p-3">Kartu</th>
+
+            </tr>
+
+            {rows}
+
+        </table>
+
     </div>
+
     """
+
     return layout(content)
 
 @app.route("/add_member", methods=["POST"])
@@ -298,157 +428,358 @@ def qr(id):
 @app.route("/transaksi")
 @login_required
 def transaksi():
+
     data = Order.query.all()
     members = Member.query.all()
+
     selected = request.args.get("kode")
 
     options_member = ""
-    for m in members:
-        sel = "selected" if m.kode == selected else ""
-        options_member += f"<option value='{m.id}' data-saldo='{m.saldo}' {sel}>{m.nama} ({m.kode}) - Rp {m.saldo}</option>"
 
-    options_layanan = "".join([f"<option>{k}</option>" for k in tarif])
+    for m in members:
+
+        sel = "selected" if m.kode == selected else ""
+
+        options_member += f"""
+        <option
+        value='{m.id}'
+        data-saldo='{m.saldo}'
+        {sel}>
+
+            {m.nama} ({m.kode}) - Rp {m.saldo}
+
+        </option>
+        """
+
+    options_layanan = "".join(
+        [f"<option>{k}</option>" for k in tarif]
+    )
 
     rows = ""
+
     for d in data:
+
         warna = "bg-gray-500"
-        if d.status == "Dicuci": warna = "bg-yellow-400 text-black"
-        elif d.status == "Setrika": warna = "bg-blue-400"
-        elif d.status == "Packing": warna = "bg-purple-400"
-        elif d.status == "Selesai": warna = "bg-green-500"
+
+        if d.status == "Dicuci":
+            warna = "bg-yellow-400 text-black"
+
+        elif d.status == "Setrika":
+            warna = "bg-blue-400"
+
+        elif d.status == "Packing":
+            warna = "bg-purple-400"
+
+        elif d.status == "Selesai":
+            warna = "bg-green-500"
 
         rows += f"""
-        <tr>
-        <td>{d.nama}</td>
-        <td>{d.layanan}</td>
-        <td>{d.total}</td>
-        <td>{d.diskon}%</td>
-        <td><span class='{warna} px-2 py-1 rounded'>{d.status}</span></td>
-        <td>
-        <a href="/update/{d.id}/Dicuci">Cuci</a>
-        <a href="/update/{d.id}/Setrika">Setrika</a>
-        <a href="/update/{d.id}/Packing">Packing</a>
-        <a href="/update/{d.id}/Selesai">Done</a>
-        <a href="/print/{d.id}" target="_blank">Print</a>
-        </td>
+
+        <tr class="border-b border-slate-700">
+
+            <td class="p-3">{d.nama}</td>
+
+            <td class="p-3">{d.layanan}</td>
+
+            <td class="p-3">
+                Rp {d.total}
+            </td>
+
+            <td class="p-3">
+                {d.diskon}%
+            </td>
+
+            <td class="p-3">
+
+                <span class='{warna} px-3 py-1 rounded-lg text-xs'>
+
+                    {d.status}
+
+                </span>
+
+            </td>
+
+            <td class="p-3 flex flex-wrap gap-2">
+
+                <a href="/update/{d.id}/Dicuci"
+                class="bg-yellow-500 text-black px-3 py-1 rounded-lg text-xs">
+                Cuci
+                </a>
+
+                <a href="/update/{d.id}/Setrika"
+                class="bg-blue-500 px-3 py-1 rounded-lg text-xs">
+                Setrika
+                </a>
+
+                <a href="/update/{d.id}/Packing"
+                class="bg-purple-500 px-3 py-1 rounded-lg text-xs">
+                Packing
+                </a>
+
+                <a href="/update/{d.id}/Selesai"
+                class="bg-green-500 px-3 py-1 rounded-lg text-xs">
+                Done
+                </a>
+
+                <a href="/print/{d.id}"
+                target="_blank"
+                class="bg-slate-600 px-3 py-1 rounded-lg text-xs">
+                Print
+                </a>
+
+            </td>
+
         </tr>
+
         """
 
     content = f"""
-    <h1 class="text-2xl mb-4">Transaksi</h1>
 
-    <div class="bg-slate-800 p-4 mb-4 rounded">
-    <h3>📷 Scan Member</h3>
-    <div id="reader" style="width:300px;"></div>
+    <h1 class="text-2xl font-bold mb-6">
+        Transaksi
+    </h1>
+
+    <!-- QR SCANNER -->
+
+    <div class="bg-slate-800 p-4 mb-6 rounded-2xl">
+
+        <h3 class="text-lg font-semibold mb-3">
+            📷 Scan Member
+        </h3>
+
+        <div id="reader"
+        class="rounded-xl overflow-hidden">
+        </div>
+
     </div>
 
-    <form method="POST" action="/add_transaksi" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+    <!-- FORM TRANSAKSI -->
 
-    <div>
-        <label>Member</label>
-        <select name="member_id" class="p-2 bg-slate-800 text-white rounded">
-            {options_member}
-        </select>
-    </div>
+    <form method="POST"
+    action="/add_transaksi"
+    class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 
-    <div>
-        <label>Saldo</label>
-        <input id="saldo_view" readonly class="p-2 bg-slate-700 text-green-400 rounded">
-    </div>
+        <div class="space-y-1">
 
-    <div>
-        <label>Layanan</label>
-        <select id="layanan" name="layanan" class="p-2 bg-slate-800 text-white rounded">
-            {options_layanan}
-        </select>
-    </div>
+            <label class="text-sm text-gray-300">
+                Member
+            </label>
 
-    <div>
-        <label>Berat</label>
-        <input id="berat" name="berat" type="number" class="p-2 bg-slate-800 text-white rounded">
-    </div>
+            <select
+            name="member_id"
+            class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
-    <div>
-        <label>Diskon</label>
-        <input id="diskon" name="diskon" type="number" value="0" class="p-2 bg-slate-800 text-white rounded">
-    </div>
+                {options_member}
 
-    <div>
-        <label>Total</label>
-        <input id="total" name="total" readonly class="p-2 bg-slate-700 text-white rounded">
-    </div>
+            </select>
 
-    <button class="col-span-4 bg-indigo-500 p-2 rounded">Tambah</button>
+        </div>
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                Saldo
+            </label>
+
+            <input
+            id="saldo_view"
+            readonly
+            class="w-full p-3 bg-slate-700 text-green-400 rounded-xl">
+
+        </div>
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                Layanan
+            </label>
+
+            <select
+            id="layanan"
+            name="layanan"
+            class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+                {options_layanan}
+
+            </select>
+
+        </div>
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                Berat (kg)
+            </label>
+
+            <input
+            id="berat"
+            name="berat"
+            type="number"
+            placeholder="0"
+            class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+        </div>
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                Diskon (%)
+            </label>
+
+            <input
+            id="diskon"
+            name="diskon"
+            type="number"
+            value="0"
+            class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+        </div>
+
+        <div class="space-y-1">
+
+            <label class="text-sm text-gray-300">
+                Total
+            </label>
+
+            <input
+            id="total"
+            name="total"
+            readonly
+            class="w-full p-3 bg-slate-700 text-white rounded-xl">
+
+        </div>
+
+        <button
+        class="md:col-span-2 bg-indigo-500 hover:bg-indigo-600 transition p-3 rounded-xl font-semibold">
+
+            Tambah Transaksi
+
+        </button>
+
     </form>
+
+    <!-- TABLE TRANSAKSI -->
 
     <div class="overflow-x-auto rounded-xl">
 
-    <table class="w-full bg-slate-800 text-sm min-w-max">
+        <table class="w-full bg-slate-800 text-sm min-w-max overflow-hidden">
 
-    <tr class="bg-slate-700">
-         <th class="p-2">Nama</th>
-         <th class="p-2">Layanan</th>
-         <th class="p-2">Total</th>
-         <th class="p-2">Status</th>
-    </tr>
+            <tr class="bg-slate-700 text-left">
 
-    {rows}
+                <th class="p-3">Nama</th>
 
-    </table>
+                <th class="p-3">Layanan</th>
+
+                <th class="p-3">Total</th>
+
+                <th class="p-3">Diskon</th>
+
+                <th class="p-3">Status</th>
+
+                <th class="p-3">Aksi</th>
+
+            </tr>
+
+            {rows}
+
+        </table>
 
     </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {{
 
-    const tarif = {{
+document.addEventListener("DOMContentLoaded", function() {
+
+    const tarif = {
         "Cuci": 5000,
         "Setrika": 4000,
         "Cuci+Setrika": 7000
-    }};
+    };
 
-    function updateSaldo() {{
-        let s = document.querySelector("select[name='member_id']");
-        let saldo = s.options[s.selectedIndex].getAttribute("data-saldo");
-        document.getElementById("saldo_view").value = "Rp " + saldo;
-    }}
+    function updateSaldo() {
 
-    function hitung() {{
-        let l = document.getElementById("layanan").value;
-        let b = parseFloat(document.getElementById("berat").value)||0;
-        let d = parseFloat(document.getElementById("diskon").value)||0;
-        let h = tarif[l]*b;
-        document.getElementById("total").value = Math.round(h-(h*d/100));
-    }}
+        let s = document.querySelector(
+            "select[name='member_id']"
+        );
 
-    document.getElementById("layanan").onchange = hitung;
-    document.getElementById("berat").oninput = hitung;
-    document.getElementById("diskon").oninput = hitung;
+        let saldo = s.options[
+            s.selectedIndex
+        ].getAttribute("data-saldo");
 
-    document.querySelector("select[name='member_id']").onchange = updateSaldo;
+        document.getElementById(
+            "saldo_view"
+        ).value = "Rp " + saldo;
+    }
 
-   updateSaldo();
+    function hitung() {
 
-    function onScanSuccess(text) {{
-        if(text.startsWith("member:")) {{
-            window.location="/transaksi?kode="+text.split(":")[1];
-        }}
-    }}
+        let l = document.getElementById(
+            "layanan"
+        ).value;
+
+        let b = parseFloat(
+            document.getElementById("berat").value
+        ) || 0;
+
+        let d = parseFloat(
+            document.getElementById("diskon").value
+        ) || 0;
+
+        let h = tarif[l] * b;
+
+        document.getElementById(
+            "total"
+        ).value = Math.round(h - (h * d / 100));
+    }
+
+    document.getElementById(
+        "layanan"
+    ).onchange = hitung;
+
+    document.getElementById(
+        "berat"
+    ).oninput = hitung;
+
+    document.getElementById(
+        "diskon"
+    ).oninput = hitung;
+
+    document.querySelector(
+        "select[name='member_id']"
+    ).onchange = updateSaldo;
+
+    updateSaldo();
+
+    function onScanSuccess(text) {
+
+        if(text.startsWith("member:")) {
+
+            window.location =
+            "/transaksi?kode=" +
+            text.split(":")[1];
+        }
+    }
 
     const qr = new Html5Qrcode("reader");
 
-    Html5Qrcode.getCameras().then(devices=>{{
-        if(devices.length){{
-            qr.start(devices[0].id, {{fps:10,qrbox:250}}, onScanSuccess);
-        }}
-    }});
+    qr.start(
+        { facingMode: "environment" },
+        {
+            fps: 10,
+            qrbox: 250
+        },
+        onScanSuccess
+    ).catch(err => {
+        console.log(err);
+    });
 
-}});
+});
+
 </script>
+
     """
 
     return layout(content)
-
 @app.route("/add_transaksi", methods=["POST"])
 @login_required
 def add_transaksi():
