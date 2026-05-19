@@ -1025,7 +1025,6 @@ def arsip():
 
 @app.route("/export/excel")
 @login_required
-
 def export_excel():
 
     data = Order.query.filter_by(
@@ -1037,23 +1036,21 @@ def export_excel():
     for d in data:
 
         rows.append({
-
             "Nama": d.nama,
             "Layanan": d.layanan,
             "Berat": d.berat,
             "Total": d.total,
             "Tanggal": d.created_at.strftime("%d-%m-%Y")
-
         })
 
     df = pd.DataFrame(rows)
 
-    file = "laporan_laundry.xlsx"
+    path = "/tmp/laporan_laundry.xlsx"
 
-    df.to_excel(file, index=False)
+    df.to_excel(path, index=False)
 
     return send_file(
-        file,
+        path,
         as_attachment=True
     )
 
@@ -1061,17 +1058,16 @@ def export_excel():
 
 @app.route("/export/pdf")
 @login_required
-
 def export_pdf():
 
     data = Order.query.filter_by(
         status="Selesai"
     ).all()
 
-    file = "laporan_laundry.pdf"
+    path = "/tmp/laporan_laundry.pdf"
 
     doc = SimpleDocTemplate(
-        file,
+        path,
         pagesize=letter
     )
 
@@ -1088,13 +1084,11 @@ def export_pdf():
     for d in data:
 
         table_data.append([
-
             d.nama,
             d.layanan,
             str(d.berat),
             f"Rp {d.total}",
             d.created_at.strftime("%d-%m-%Y")
-
         ])
 
     table = Table(table_data)
@@ -1102,11 +1096,8 @@ def export_pdf():
     table.setStyle(TableStyle([
 
         ('BACKGROUND', (0,0), (-1,0), colors.grey),
-
         ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
-
         ('GRID', (0,0), (-1,-1), 1, colors.black),
-
         ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
 
     ]))
@@ -1116,10 +1107,10 @@ def export_pdf():
     doc.build(elements)
 
     return send_file(
-        file,
+        path,
         as_attachment=True
     )
-
+# ================= Print =================    
 @app.route("/print/<int:id>")
 @login_required
 def print_struk(id):
