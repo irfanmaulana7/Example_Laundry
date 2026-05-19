@@ -688,15 +688,15 @@ def transaksi():
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {{
 
-    const tarif = {
+    const tarif = {{
         "Cuci": 5000,
         "Setrika": 4000,
         "Cuci+Setrika": 7000
-    };
+    }};
 
-    function updateSaldo() {
+    function updateSaldo() {{
 
         let s = document.querySelector(
             "select[name='member_id']"
@@ -709,9 +709,9 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById(
             "saldo_view"
         ).value = "Rp " + saldo;
-    }
+    }}
 
-    function hitung() {
+    function hitung() {{
 
         let l = document.getElementById(
             "layanan"
@@ -730,7 +730,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById(
             "total"
         ).value = Math.round(h - (h * d / 100));
-    }
+    }}
 
     document.getElementById(
         "layanan"
@@ -750,30 +750,30 @@ document.addEventListener("DOMContentLoaded", function() {
 
     updateSaldo();
 
-    function onScanSuccess(text) {
+    function onScanSuccess(text) {{
 
-        if(text.startsWith("member:")) {
+        if(text.startsWith("member:")) {{
 
             window.location =
             "/transaksi?kode=" +
             text.split(":")[1];
-        }
-    }
+        }}
+    }}
 
     const qr = new Html5Qrcode("reader");
 
     qr.start(
-        { facingMode: "environment" },
-        {
+        {{ facingMode: "environment" }},
+        {{
             fps: 10,
             qrbox: 250
-        },
+        }},
         onScanSuccess
-    ).catch(err => {
+    ).catch(err => {{
         console.log(err);
-    });
+    }});
 
-});
+}});
 
 </script>
 
