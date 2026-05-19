@@ -6,6 +6,12 @@ from datetime import datetime
 import qrcode
 from io import BytesIO
 
+import pandas as pd
+
+from reportlab.platypus import *
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///laundry.db'
 app.config['SECRET_KEY'] = 'secret123'
@@ -107,6 +113,11 @@ def layout(content):
             <a href="/transaksi"
             class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl transition">
             Transaksi
+            </a>
+            
+            <a href="/arsip"
+            class="bg-slate-800 hover:bg-slate-700 p-3 rounded-xl transition">
+            Arsip
             </a>
 
             <a href="/logout"
@@ -899,6 +910,215 @@ def add_transaksi():
 
     db.session.commit()
     return redirect("/transaksi")
+
+# ================= ARSIP =================
+
+@app.route("/arsip")
+@login_required
+def arsip():
+
+    data = Order.query.filter_by(
+        status="Selesai"
+    ).order_by(Order.id.desc()).all()
+
+    rows = ""
+
+    for d in data:
+
+        rows += f"""
+
+        <tr class="border-b border-slate-700">
+
+            <td class="p-3">{d.nama}</td>
+
+            <td class="p-3">{d.layanan}</td>
+
+            <td class="p-3">
+                {d.berat} Kg
+            </td>
+
+            <td class="p-3">
+                Rp {d.total}
+            </td>
+
+            <td class="p-3">
+                {d.created_at.strftime("%d-%m-%Y")}
+            </td>
+
+            <td class="p-3">
+
+                <a href="/print/{d.id}"
+                target="_blank"
+                class="bg-slate-600 px-3 py-1 rounded-lg text-xs">
+
+                Print
+
+                </a>
+
+            </td>
+
+        </tr>
+
+        """
+
+    content = f"""
+
+    <div class="flex flex-col md:flex-row
+    justify-between items-start md:items-center
+    gap-4 mb-6">
+
+        <h1 class="text-2xl font-bold">
+            Arsip Transaksi
+        </h1>
+
+        <div class="flex gap-3 flex-wrap">
+
+            <a href="/export/excel"
+            class="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-xl">
+
+            Export Excel
+
+            </a>
+
+            <a href="/export/pdf"
+            class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl">
+
+            Export PDF
+
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="overflow-x-auto rounded-xl">
+
+        <table class="w-full bg-slate-800 text-sm min-w-max">
+
+            <tr class="bg-slate-700 text-left">
+
+                <th class="p-3">Nama</th>
+
+                <th class="p-3">Layanan</th>
+
+                <th class="p-3">Berat</th>
+
+                <th class="p-3">Total</th>
+
+                <th class="p-3">Tanggal</th>
+
+                <th class="p-3">Print</th>
+
+            </tr>
+
+            {rows}
+
+        </table>
+
+    </div>
+
+    """
+
+    return layout(content)
+
+# ================= EXPORT EXCEL =================
+
+@app.route("/export/excel")
+@login_required
+
+def export_excel():
+
+    data = Order.query.filter_by(
+        status="Selesai"
+    ).all()
+
+    rows = []
+
+    for d in data:
+
+        rows.append({
+
+            "Nama": d.nama,
+            "Layanan": d.layanan,
+            "Berat": d.berat,
+            "Total": d.total,
+            "Tanggal": d.created_at.strftime("%d-%m-%Y")
+
+        })
+
+    df = pd.DataFrame(rows)
+
+    file = "laporan_laundry.xlsx"
+
+    df.to_excel(file, index=False)
+
+    return send_file(
+        file,
+        as_attachment=True
+    )
+
+# ================= EXPORT PDF =================
+
+@app.route("/export/pdf")
+@login_required
+
+def export_pdf():
+
+    data = Order.query.filter_by(
+        status="Selesai"
+    ).all()
+
+    file = "laporan_laundry.pdf"
+
+    doc = SimpleDocTemplate(
+        file,
+        pagesize=letter
+    )
+
+    elements = []
+
+    table_data = [[
+        "Nama",
+        "Layanan",
+        "Berat",
+        "Total",
+        "Tanggal"
+    ]]
+
+    for d in data:
+
+        table_data.append([
+
+            d.nama,
+            d.layanan,
+            str(d.berat),
+            f"Rp {d.total}",
+            d.created_at.strftime("%d-%m-%Y")
+
+        ])
+
+    table = Table(table_data)
+
+    table.setStyle(TableStyle([
+
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+
+        ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
+
+        ('GRID', (0,0), (-1,-1), 1, colors.black),
+
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
+
+    ]))
+
+    elements.append(table)
+
+    doc.build(elements)
+
+    return send_file(
+        file,
+        as_attachment=True
+    )
 
 @app.route("/print/<int:id>")
 @login_required
