@@ -501,7 +501,9 @@ def kartu(id):
 @login_required
 def transaksi():
 
-    data = Order.query.all()
+    data = Order.query.filter(
+        Order.status != "Selesai"
+    ).all()
     members = Member.query.all()
 
     selected = request.args.get("kode")
