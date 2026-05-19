@@ -424,6 +424,78 @@ def qr(id):
     buf.seek(0)
     return send_file(buf, mimetype='image/png')
 
+@app.route("/kartu/<int:id>")
+@login_required
+def kartu(id):
+
+    m = Member.query.get(id)
+
+    return f"""
+    <html>
+
+    <head>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    </head>
+
+    <body class="bg-slate-900 flex items-center justify-center min-h-screen text-white p-4">
+
+        <div class="bg-slate-800 rounded-3xl p-6 w-full max-w-sm shadow-2xl">
+
+            <div class="text-center">
+
+                <img src="/static/logo.png"
+                class="w-24 mx-auto mb-4">
+
+                <h1 class="text-2xl font-bold mb-1">
+                    ZEECLEAN LAUNDRY
+                </h1>
+
+                <p class="text-gray-400 mb-6">
+                    Member Card
+                </p>
+
+            </div>
+
+            <div class="space-y-3 text-sm">
+
+                <div class="bg-slate-700 p-3 rounded-xl">
+                    <b>ID Member</b><br>
+                    {m.kode}
+                </div>
+
+                <div class="bg-slate-700 p-3 rounded-xl">
+                    <b>Nama</b><br>
+                    {m.nama}
+                </div>
+
+                <div class="bg-slate-700 p-3 rounded-xl">
+                    <b>Nomor HP</b><br>
+                    {m.hp}
+                </div>
+
+                <div class="bg-slate-700 p-3 rounded-xl">
+                    <b>Saldo</b><br>
+                    Rp {m.saldo}
+                </div>
+
+            </div>
+
+            <div class="flex justify-center mt-6">
+
+                <img src="/qr/{m.id}"
+                class="bg-white p-3 rounded-2xl w-52">
+
+            </div>
+
+        </div>
+
+    </body>
+
+    </html>
+    """
+
 # ================= TRANSAKSI =================
 @app.route("/transaksi")
 @login_required
@@ -729,7 +801,9 @@ document.addEventListener("DOMContentLoaded", function() {{
 
         document.getElementById(
             "total"
-        ).value = Math.round(h - (h * d / 100));
+        ).value = Math.round(
+            h - (h * d / 100)
+        );
     }}
 
     document.getElementById(
@@ -749,24 +823,31 @@ document.addEventListener("DOMContentLoaded", function() {{
     ).onchange = updateSaldo;
 
     updateSaldo();
+    hitung();
+
+    const qr = new Html5Qrcode("reader");
 
     function onScanSuccess(text) {{
 
-        if(text.startsWith("member:")) {{
+        qr.stop().then(() => {{
 
-            window.location =
-            "/transaksi?kode=" +
-            text.split(":")[1];
-        }}
+            if(text.startsWith("member:")) {{
+
+                window.location =
+                "/transaksi?kode=" +
+                text.split(":")[1];
+
+            }}
+
+        }});
+
     }}
-
-    const qr = new Html5Qrcode("reader");
 
     qr.start(
         {{ facingMode: "environment" }},
         {{
-            fps: 10,
-            qrbox: 250
+            fps: 5,
+            qrbox: 180
         }},
         onScanSuccess
     ).catch(err => {{
@@ -776,7 +857,6 @@ document.addEventListener("DOMContentLoaded", function() {{
 }});
 
 </script>
-
     """
 
     return layout(content)
@@ -805,8 +885,7 @@ def add_transaksi():
 
     # 🔥 POTONG SALDO
     if member and member.saldo >= total_int:
-        member.saldo -= total_int
-        total_int = 0
+       member.saldo -= total_int
 
     db.session.add(Order(
         nama=member.nama if member else "-",
