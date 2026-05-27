@@ -1239,6 +1239,22 @@ def init():
     ))
 
     db.session.add(Layanan(
+        nama="Selimut Bayi",
+        harga=8000
+    ))
+
+    db.session.add(Layanan(
+        nama="Selimut Single Biasa",
+        harga=15000
+    ))
+
+    db.session.add(Layanan(
+        nama="Selimut Bad Cover",
+        harga=25000
+    ))
+
+    
+    db.session.add(Layanan(
         nama="Sepatu",
         harga=5000
     ))
