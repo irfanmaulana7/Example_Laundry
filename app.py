@@ -708,9 +708,11 @@ def transaksi():
             id="berat"
             name="berat"
             type="number"
-            placeholder="0"
+            step="0.1"
+            min="0"
+            placeholder="0.0"
             class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-
+            
         </div>
 
         <div class="space-y-1">
