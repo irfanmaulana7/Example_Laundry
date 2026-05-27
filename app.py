@@ -46,12 +46,11 @@ class Order(db.Model):
     status = db.Column(db.String(50), default="Diterima")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# ================= TARIF =================
-tarif = {
-    "Cuci": 5000,
-    "Setrika": 4000,
-    "Cuci+Setrika": 7000
-}
+# ================= LAYANAN =================
+class Layanan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nama = db.Column(db.String(100))
+    harga = db.Column(db.Integer)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -525,20 +524,29 @@ def transaksi():
 
         sel = "selected" if m.kode == selected else ""
 
+        options_member = ""
+
+    for m in members:
+    
+        sel = "selected" if m.kode == selected else ""
+    
         options_member += f"""
         <option
         value='{m.id}'
         data-saldo='{m.saldo}'
         {sel}>
-
+    
             {m.nama} ({m.kode}) - Rp {m.saldo}
-
+    
         </option>
         """
-
-    options_layanan = "".join(
-        [f"<option>{k}</option>" for k in tarif]
-    )
+    
+    layanan_db = Layanan.query.all()
+    
+    options_layanan = "".join([
+        f"<option data-harga='{l.harga}'>{l.nama}</option>"
+        for l in layanan_db
+    ])
 
     rows = ""
 
@@ -775,11 +783,18 @@ def transaksi():
 
 document.addEventListener("DOMContentLoaded", function() {{
 
-    const tarif = {{
-        "Cuci": 5000,
-        "Setrika": 4000,
-        "Cuci+Setrika": 7000
-    }};
+    function getHarga() {{
+
+    let layanan = document.getElementById(
+        "layanan"
+    );
+
+    return parseInt(
+        layanan.options[
+            layanan.selectedIndex
+        ].getAttribute("data-harga")
+    ) || 0;
+}}
 
     function updateSaldo() {{
 
@@ -810,7 +825,7 @@ document.addEventListener("DOMContentLoaded", function() {{
             document.getElementById("diskon").value
         ) || 0;
 
-        let h = tarif[l] * b;
+        let h = getHarga() * b;
 
         document.getElementById(
             "total"
@@ -1185,10 +1200,59 @@ def logout():
 
 @app.route("/init")
 def init():
+
     db.drop_all()
     db.create_all()
-    db.session.add(User(username="admin", password="admin"))
+
+    # ADMIN
+    db.session.add(User(
+        username="admin",
+        password="admin"
+    ))
+
+    # LAYANAN
+    db.session.add(Layanan(
+        nama="Cuci",
+        harga=5000
+    ))
+
+    db.session.add(Layanan(
+        nama="Setrika",
+        harga=4000
+    ))
+
+    db.session.add(Layanan(
+        nama="Cuci + Setrika",
+        harga=7000
+    ))
+
+    db.session.add(Layanan(
+        nama="Express",
+        harga=11000
+    ))
+
+    db.session.add(Layanan(
+        nama="Satuan",
+        harga=10000
+    ))
+
+    db.session.add(Layanan(
+        nama="Sepatu",
+        harga=5000
+    ))
+
+    db.session.add(Layanan(
+        nama="Boneka",
+        harga=30000
+    ))
+
+    db.session.add(Layanan(
+        nama="Karpet / m2",
+        harga=20000
+    ))
+
     db.session.commit()
+
     return "DB Ready"
 
 import webbrowser
