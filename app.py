@@ -1086,7 +1086,6 @@ def export_excel():
 
     from openpyxl import Workbook
     from flask import send_file
-    import os
 
     wb = Workbook()
     ws = wb.active
@@ -1100,18 +1099,19 @@ def export_excel():
         "Total"
     ])
 
-    data = Transaksi.query.all()
+    data = Order.query.all()
 
     for d in data:
+
         ws.append([
             d.id,
-            d.nama_pelanggan,
+            d.nama,
             d.layanan,
             d.berat,
             d.total
         ])
 
-    file_path = "/home/saysin/Example_Laundry/laporan_laundry.xlsx"
+    file_path = "laporan_laundry.xlsx"
 
     wb.save(file_path)
 
@@ -1132,19 +1132,26 @@ def export_pdf():
     pdf.add_page()
 
     pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Laporan Laundry", ln=True)
 
-    data = Transaksi.query.all()
+    pdf.cell(
+        200,
+        10,
+        txt="Laporan Laundry",
+        ln=True
+    )
+
+    data = Order.query.all()
 
     for d in data:
+
         pdf.cell(
             200,
             10,
-            txt=f"{d.nama_pelanggan} - {d.total}",
+            txt=f"{d.nama} - Rp {d.total}",
             ln=True
         )
 
-    file_path = "/home/saysin/Example_Laundry/laporan_laundry.pdf"
+    file_path = "laporan_laundry.pdf"
 
     pdf.output(file_path)
 
