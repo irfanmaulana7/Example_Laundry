@@ -779,9 +779,9 @@ def transaksi():
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() {{
 
-    function getHarga() {
+    function getHarga() {{
 
         let layanan = document.getElementById("layanan");
 
@@ -790,9 +790,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 layanan.selectedIndex
             ].getAttribute("data-harga")
         ) || 0;
-    }
+    }}
 
-    function updateSaldo() {
+    function updateSaldo() {{
 
         let s = document.querySelector(
             "select[name='member_id']"
@@ -805,10 +805,9 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById(
             "saldo_view"
         ).value = "Rp " + saldo;
-    }
+    }}
 
-    // 🔥 CEK APAKAH LAYANAN SATUAN
-    function isSatuan(layanan) {
+    function isSatuan(layanan) {{
 
         let satuan = [
             "Satuan",
@@ -821,9 +820,9 @@ document.addEventListener("DOMContentLoaded", function() {
         ];
 
         return satuan.includes(layanan);
-    }
+    }}
 
-    function updateBeratMode() {
+    function updateBeratMode() {{
 
         let layanan =
             document.getElementById(
@@ -840,45 +839,42 @@ document.addEventListener("DOMContentLoaded", function() {
                 "label_berat"
             );
 
-        // 🔥 MODE PCS
-        if (isSatuan(layanan)) {
+        if (isSatuan(layanan)) {{
 
-        // KHUSUS KARPET
-        if (layanan == "Karpet / m2") {
-    
-            label.innerText =
-                "Jumlah (m2)";
-    
-            beratInput.placeholder =
-                "Jumlah m2";
-    
-        }
-    
-        // PCS
-        else {
-    
-            label.innerText =
-                "Jumlah (pcs)";
-    
-            beratInput.placeholder =
-                "Jumlah pcs";
-        }
-    
-        beratInput.step = "1";
-    
-        beratInput.min = "1";
-    
-        if (
-            beratInput.value == "" ||
-            beratInput.value == "0"
-        ) {
-            beratInput.value = 1;
-        }
-    
-    }
+            if (layanan == "Karpet / m2") {{
 
-        // 🔥 MODE KG
-        else {
+                label.innerText =
+                    "Jumlah (m2)";
+
+                beratInput.placeholder =
+                    "Jumlah m2";
+
+            }}
+
+            else {{
+
+                label.innerText =
+                    "Jumlah (pcs)";
+
+                beratInput.placeholder =
+                    "Jumlah pcs";
+            }}
+
+            beratInput.step = "1";
+
+            beratInput.min = "1";
+
+            if (
+                beratInput.value == "" ||
+                beratInput.value == "0"
+            ) {{
+
+                beratInput.value = 1;
+            }}
+
+        }}
+
+        else {{
 
             label.innerText =
                 "Berat (kg)";
@@ -889,12 +885,12 @@ document.addEventListener("DOMContentLoaded", function() {
             beratInput.step = "0.01";
 
             beratInput.min = "0";
-        }
+        }}
 
         hitung();
-    }
+    }}
 
-    function hitung() {
+    function hitung() {{
 
         let b = parseFloat(
             document.getElementById(
@@ -915,7 +911,7 @@ document.addEventListener("DOMContentLoaded", function() {
         ).value = Math.round(
             h - (h * d / 100)
         );
-    }
+    }}
 
     document.getElementById(
         "layanan"
@@ -938,34 +934,34 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const qr = new Html5Qrcode("reader");
 
-    function onScanSuccess(text) {
+    function onScanSuccess(text) {{
 
-        qr.stop().then(() => {
+        qr.stop().then(() => {{
 
-            if(text.startsWith("member:")) {
+            if(text.startsWith("member:")) {{
 
                 window.location =
                 "/transaksi?kode=" +
                 text.split(":")[1];
 
-            }
+            }}
 
-        });
+        }});
 
-    }
+    }}
 
     qr.start(
-        { facingMode: "environment" },
-        {
+        {{ facingMode: "environment" }},
+        {{
             fps: 5,
             qrbox: 180
-        },
+        }},
         onScanSuccess
-    ).catch(err => {
+    ).catch(err => {{
         console.log(err);
-    });
+    }});
 
-});
+}});
 
 </script>
     """
