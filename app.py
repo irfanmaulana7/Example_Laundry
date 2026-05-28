@@ -781,16 +781,15 @@ document.addEventListener("DOMContentLoaded", function() {{
 
     function getHarga() {{
 
-    let layanan = document.getElementById(
-        "layanan"
-    );
+        let layanan = document.getElementById("layanan");
 
-    return parseInt(
-        layanan.options[
-            layanan.selectedIndex
-        ].getAttribute("data-harga")
-    ) || 0;
-}}
+        return parseInt(
+            layanan.options[
+                layanan.selectedIndex
+            ].getAttribute("data-harga")
+        ) || 0;
+
+    }}
 
     function updateSaldo() {{
 
@@ -805,76 +804,81 @@ document.addEventListener("DOMContentLoaded", function() {{
         document.getElementById(
             "saldo_view"
         ).value = "Rp " + saldo;
+
     }}
 
-    function hitung() {
+    function hitung() {{
 
-    let layanan = document.getElementById(
-        "layanan"
-    ).value;
+        let layanan = document.getElementById(
+            "layanan"
+        ).value;
 
-    let b = parseFloat(
-        document.getElementById("berat").value
-    ) || 0;
+        let b = parseFloat(
+            document.getElementById("berat").value
+        ) || 0;
 
-    let d = parseFloat(
-        document.getElementById("diskon").value
-    ) || 0;
+        let d = parseFloat(
+            document.getElementById("diskon").value
+        ) || 0;
 
-    // 🔥 layanan satuan otomatis 1
-    if(
-        layanan.includes("Selimut") ||
-        layanan.includes("Sepatu") ||
-        layanan.includes("Boneka") ||
-        layanan.includes("Bed Cover")
-    ) {
+        // layanan satuan otomatis 1
+        if(
+            layanan.includes("Selimut") ||
+            layanan.includes("Sepatu") ||
+            layanan.includes("Boneka") ||
+            layanan.includes("Bed Cover")
+        ) {{
 
-        b = 1;
+            b = 1;
+
+            document.getElementById(
+                "berat"
+            ).value = 1;
+        }}
+
+        let h = getHarga() * b;
 
         document.getElementById(
-            "berat"
-        ).value = 1;
-    }
+            "total"
+        ).value = Math.round(
+            h - (h * d / 100)
+        );
 
-    let h = getHarga() * b;
+    }}
 
     document.getElementById(
-        "total"
-    ).value = Math.round(
-        h - (h * d / 100)
-    );
-}
-    document.getElementById(
-    "layanan"
-).onchange = function() {
+        "layanan"
+    ).onchange = function() {{
 
-    let layanan = document.getElementById("layanan").value;
+        let layanan = document.getElementById("layanan").value;
 
-    let satuan = [
-        "Selimut Bayi",
-        "Selimut Single Biasa",
-        "Bed Cover",
-        "Sepatu",
-        "Boneka"
-    ];
+        let satuan = [
+            "Selimut Bayi",
+            "Selimut Single Biasa",
+            "Bed Cover",
+            "Sepatu",
+            "Boneka"
+        ];
 
-    let beratInput = document.getElementById("berat");
+        let beratInput = document.getElementById("berat");
 
-    if (satuan.includes(layanan)) {
+        if (satuan.includes(layanan)) {{
 
-        beratInput.value = 1;
-        beratInput.readOnly = true;
-        beratInput.classList.add("bg-slate-700");
+            beratInput.value = 1;
+            beratInput.readOnly = true;
+            beratInput.classList.add("bg-slate-700");
 
-    } else {
+        }} else {{
 
-        beratInput.readOnly = false;
-        beratInput.value = "";
-        beratInput.classList.remove("bg-slate-700");
-    }
+            beratInput.readOnly = false;
+            beratInput.value = "";
+            beratInput.classList.remove("bg-slate-700");
 
-    hitung();
-    };
+        }}
+
+        hitung();
+
+    }};
 
     document.getElementById(
         "berat"
@@ -1076,111 +1080,76 @@ def arsip():
 
 # ================= EXPORT EXCEL =================
 
-@app.route("/export/excel")
+@app.route('/export/excel')
 @login_required
 def export_excel():
 
-    data = Order.query.filter_by(
-        status="Selesai"
-    ).all()
+    from openpyxl import Workbook
+    from flask import send_file
+    import os
 
-    rows = []
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Laporan Laundry"
+
+    ws.append([
+        "ID",
+        "Pelanggan",
+        "Layanan",
+        "Berat",
+        "Total"
+    ])
+
+    data = Transaksi.query.all()
 
     for d in data:
+        ws.append([
+            d.id,
+            d.nama_pelanggan,
+            d.layanan,
+            d.berat,
+            d.total
+        ])
 
-        # format berat / pcs
-        berat_text = (
-            "1 Pcs"
-            if d.berat == 1 and (
-                "Selimut" in d.layanan or
-                "Sepatu" in d.layanan or
-                "Boneka" in d.layanan or
-                "Bed Cover" in d.layanan
-            )
-            else str(d.berat) + " Kg"
-        )
+    file_path = "/home/saysin/Example_Laundry/laporan_laundry.xlsx"
 
-        rows.append({
-            "Nama": d.nama,
-            "Layanan": d.layanan,
-            "Berat": berat_text,
-            "Total": d.total,
-            "Tanggal": d.created_at.strftime("%d-%m-%Y")
-        })
-
-    df = pd.DataFrame(rows)
-
-    path = "/tmp/laporan_laundry.xlsx"
-
-    df.to_excel(path, index=False)
+    wb.save(file_path)
 
     return send_file(
-        path,
+        file_path,
         as_attachment=True
     )
 # ================= EXPORT PDF =================
 
-@app.route("/export/pdf")
+@app.route('/export/pdf')
 @login_required
 def export_pdf():
 
-    data = Order.query.filter_by(
-        status="Selesai"
-    ).all()
+    from fpdf import FPDF
+    from flask import send_file
 
-    path = "/tmp/laporan_laundry.pdf"
+    pdf = FPDF()
+    pdf.add_page()
 
-    doc = SimpleDocTemplate(
-        path,
-        pagesize=letter
-    )
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="Laporan Laundry", ln=True)
 
-    elements = []
-
-    table_data = [[
-        "Nama",
-        "Layanan",
-        "Berat",
-        "Total",
-        "Tanggal"
-    ]]
+    data = Transaksi.query.all()
 
     for d in data:
+        pdf.cell(
+            200,
+            10,
+            txt=f"{d.nama_pelanggan} - {d.total}",
+            ln=True
+        )
 
-        table_data.append([
-            d.nama,
-            d.layanan,
-            (
-            "1 Pcs"
-            if d.berat == 1 and (
-                "Selimut" in d.layanan or
-                "Sepatu" in d.layanan or
-                "Boneka" in d.layanan or
-                "Bed Cover" in d.layanan
-            )
-            else str(d.berat) + " Kg"
-        ),
-            f"Rp {d.total}",
-            d.created_at.strftime("%d-%m-%Y")
-        ])
+    file_path = "/home/saysin/Example_Laundry/laporan_laundry.pdf"
 
-    table = Table(table_data)
-
-    table.setStyle(TableStyle([
-
-        ('BACKGROUND', (0,0), (-1,0), colors.grey),
-        ('TEXTCOLOR',(0,0),(-1,0),colors.whitesmoke),
-        ('GRID', (0,0), (-1,-1), 1, colors.black),
-        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold')
-
-    ]))
-
-    elements.append(table)
-
-    doc.build(elements)
+    pdf.output(file_path)
 
     return send_file(
-        path,
+        file_path,
         as_attachment=True
     )
 # ================= Print =================    
