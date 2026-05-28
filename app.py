@@ -694,8 +694,10 @@ def transaksi():
 
         <div class="space-y-1">
 
-            <label class="text-sm text-gray-300">
-                Berat (kg)
+            <label
+            id="label_berat"
+            class="text-sm text-gray-300">
+                Berat (kg)/Jumlah (pcs)
             </label>
             
             <input
@@ -777,9 +779,9 @@ def transaksi():
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function() {{
+document.addEventListener("DOMContentLoaded", function() {
 
-    function getHarga() {{
+    function getHarga() {
 
         let layanan = document.getElementById("layanan");
 
@@ -788,10 +790,9 @@ document.addEventListener("DOMContentLoaded", function() {{
                 layanan.selectedIndex
             ].getAttribute("data-harga")
         ) || 0;
+    }
 
-    }}
-
-    function updateSaldo() {{
+    function updateSaldo() {
 
         let s = document.querySelector(
             "select[name='member_id']"
@@ -804,37 +805,108 @@ document.addEventListener("DOMContentLoaded", function() {{
         document.getElementById(
             "saldo_view"
         ).value = "Rp " + saldo;
+    }
 
-    }}
+    // 🔥 CEK APAKAH LAYANAN SATUAN
+    function isSatuan(layanan) {
 
-    function hitung() {{
+        let satuan = [
+            "Satuan",
+            "Selimut Bayi",
+            "Selimut Single Biasa",
+            "Bed Cover",
+            "Sepatu",
+            "Karpet / m2",
+            "Boneka"
+        ];
 
-        let layanan = document.getElementById(
-            "layanan"
-        ).value;
+        return satuan.includes(layanan);
+    }
+
+    function updateBeratMode() {
+
+        let layanan =
+            document.getElementById(
+                "layanan"
+            ).value;
+
+        let beratInput =
+            document.getElementById(
+                "berat"
+            );
+
+        let label =
+            document.getElementById(
+                "label_berat"
+            );
+
+        // 🔥 MODE PCS
+        if (isSatuan(layanan)) {
+
+        // KHUSUS KARPET
+        if (layanan == "Karpet / m2") {
+    
+            label.innerText =
+                "Jumlah (m2)";
+    
+            beratInput.placeholder =
+                "Jumlah m2";
+    
+        }
+    
+        // PCS
+        else {
+    
+            label.innerText =
+                "Jumlah (pcs)";
+    
+            beratInput.placeholder =
+                "Jumlah pcs";
+        }
+    
+        beratInput.step = "1";
+    
+        beratInput.min = "1";
+    
+        if (
+            beratInput.value == "" ||
+            beratInput.value == "0"
+        ) {
+            beratInput.value = 1;
+        }
+    
+    }
+
+        // 🔥 MODE KG
+        else {
+
+            label.innerText =
+                "Berat (kg)";
+
+            beratInput.placeholder =
+                "0.0";
+
+            beratInput.step = "0.01";
+
+            beratInput.min = "0";
+        }
+
+        hitung();
+    }
+
+    function hitung() {
 
         let b = parseFloat(
-            document.getElementById("berat").value
+            document.getElementById(
+                "berat"
+            ).value
         ) || 0;
 
         let d = parseFloat(
-            document.getElementById("diskon").value
-        ) || 0;
-
-        // layanan satuan otomatis 1
-        if(
-            layanan.includes("Selimut") ||
-            layanan.includes("Sepatu") ||
-            layanan.includes("Boneka") ||
-            layanan.includes("Bed Cover")
-        ) {{
-
-            b = 1;
-
             document.getElementById(
-                "berat"
-            ).value = 1;
-        }}
+                "diskon"
+            ).value
+        ) || 0;
 
         let h = getHarga() * b;
 
@@ -843,42 +915,11 @@ document.addEventListener("DOMContentLoaded", function() {{
         ).value = Math.round(
             h - (h * d / 100)
         );
-
-    }}
+    }
 
     document.getElementById(
         "layanan"
-    ).onchange = function() {{
-
-        let layanan = document.getElementById("layanan").value;
-
-        let satuan = [
-            "Selimut Bayi",
-            "Selimut Single Biasa",
-            "Bed Cover",
-            "Sepatu",
-            "Boneka"
-        ];
-
-        let beratInput = document.getElementById("berat");
-
-        if (satuan.includes(layanan)) {{
-
-            beratInput.value = 1;
-            beratInput.readOnly = true;
-            beratInput.classList.add("bg-slate-700");
-
-        }} else {{
-
-            beratInput.readOnly = false;
-            beratInput.value = "";
-            beratInput.classList.remove("bg-slate-700");
-
-        }}
-
-        hitung();
-
-    }};
+    ).onchange = updateBeratMode;
 
     document.getElementById(
         "berat"
@@ -893,38 +934,38 @@ document.addEventListener("DOMContentLoaded", function() {{
     ).onchange = updateSaldo;
 
     updateSaldo();
-    hitung();
+    updateBeratMode();
 
     const qr = new Html5Qrcode("reader");
 
-    function onScanSuccess(text) {{
+    function onScanSuccess(text) {
 
-        qr.stop().then(() => {{
+        qr.stop().then(() => {
 
-            if(text.startsWith("member:")) {{
+            if(text.startsWith("member:")) {
 
                 window.location =
                 "/transaksi?kode=" +
                 text.split(":")[1];
 
-            }}
+            }
 
-        }});
+        });
 
-    }}
+    }
 
     qr.start(
-        {{ facingMode: "environment" }},
-        {{
+        { facingMode: "environment" },
+        {
             fps: 5,
             qrbox: 180
-        }},
+        },
         onScanSuccess
-    ).catch(err => {{
+    ).catch(err => {
         console.log(err);
-    }});
+    });
 
-}});
+});
 
 </script>
     """
@@ -991,12 +1032,38 @@ def arsip():
             <td class="p-3">{d.layanan}</td>
 
             <td class="p-3">
-                {d.berat} Kg
-            </td>
-
-            <td class="p-3">
-                Rp {d.total}
-            </td>
+    {
+        str(int(d.berat)) + " Pcs"
+        if d.layanan in [
+        "Satuan",
+        "Selimut Bayi",
+        "Selimut Single Biasa",
+        "Bed Cover",
+        "Sepatu",
+        "Boneka",
+        "Karpet / m2"
+    ]
+        else str(d.berat) + " Kg"
+    }
+</td>
+           <td class="p-3">
+{
+    str(int(d.berat)) + " m2"
+    if d.layanan == "Karpet / m2"
+    else (
+        str(int(d.berat)) + " Pcs"
+        if d.layanan in [
+            "Satuan",
+            "Selimut Bayi",
+            "Selimut Single Biasa",
+            "Bed Cover",
+            "Sepatu",
+            "Boneka"
+        ]
+        else str(d.berat) + " Kg"
+    )
+}
+</td>
 
             <td class="p-3">
                 {d.created_at.strftime("%d-%m-%Y")}
@@ -1200,13 +1267,18 @@ def print_struk(id):
     Nama    : {o.nama}<br>
     Layanan : {o.layanan}<br>
     Berat   : {
-                "1 Pcs" if o.berat == 1 and (
-                "Selimut" in o.layanan or
-                "Sepatu" in o.layanan or
-                "Boneka" in o.layanan
-                )
-                else str(o.berat) + " Kg"
-                }<br>
+            str(int(o.berat)) + " Pcs"
+            if o.layanan in [
+                "Satuan",
+                "Selimut Bayi",
+                "Selimut Single Biasa",
+                "Bed Cover",
+                "Sepatu",
+                "Boneka",
+                "Karpet / m2"
+            ]
+            else str(o.berat) + " Kg"
+            }<br>
     Diskon  : {o.diskon}%<br>
     Total   : Rp {o.total}<br>
 
