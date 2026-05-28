@@ -521,12 +521,6 @@ def transaksi():
     options_member = ""
 
     for m in members:
-
-        sel = "selected" if m.kode == selected else ""
-
-        options_member = ""
-
-    for m in members:
     
         sel = "selected" if m.kode == selected else ""
     
@@ -703,12 +697,12 @@ def transaksi():
             <label class="text-sm text-gray-300">
                 Berat (kg)
             </label>
-
+            
             <input
             id="berat"
             name="berat"
             type="number"
-            step="0.1"
+            step="0.01"
             min="0"
             placeholder="0.0"
             class="w-full p-3 bg-slate-800 text-white border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -813,32 +807,74 @@ document.addEventListener("DOMContentLoaded", function() {{
         ).value = "Rp " + saldo;
     }}
 
-    function hitung() {{
+    function hitung() {
 
-        let l = document.getElementById(
-            "layanan"
-        ).value;
+    let layanan = document.getElementById(
+        "layanan"
+    ).value;
 
-        let b = parseFloat(
-            document.getElementById("berat").value
-        ) || 0;
+    let b = parseFloat(
+        document.getElementById("berat").value
+    ) || 0;
 
-        let d = parseFloat(
-            document.getElementById("diskon").value
-        ) || 0;
+    let d = parseFloat(
+        document.getElementById("diskon").value
+    ) || 0;
 
-        let h = getHarga() * b;
+    // 🔥 layanan satuan otomatis 1
+    if(
+        layanan.includes("Selimut") ||
+        layanan.includes("Sepatu") ||
+        layanan.includes("Boneka") ||
+        layanan.includes("Bed Cover")
+    ) {
+
+        b = 1;
 
         document.getElementById(
-            "total"
-        ).value = Math.round(
-            h - (h * d / 100)
-        );
-    }}
+            "berat"
+        ).value = 1;
+    }
+
+    let h = getHarga() * b;
 
     document.getElementById(
-        "layanan"
-    ).onchange = hitung;
+        "total"
+    ).value = Math.round(
+        h - (h * d / 100)
+    );
+}
+    document.getElementById(
+    "layanan"
+).onchange = function() {
+
+    let layanan = document.getElementById("layanan").value;
+
+    let satuan = [
+        "Selimut Bayi",
+        "Selimut Single Biasa",
+        "Bed Cover",
+        "Sepatu",
+        "Boneka"
+    ];
+
+    let beratInput = document.getElementById("berat");
+
+    if (satuan.includes(layanan)) {
+
+        beratInput.value = 1;
+        beratInput.readOnly = true;
+        beratInput.classList.add("bg-slate-700");
+
+    } else {
+
+        beratInput.readOnly = false;
+        beratInput.value = "";
+        beratInput.classList.remove("bg-slate-700");
+    }
+
+    hitung();
+    };
 
     document.getElementById(
         "berat"
@@ -1052,10 +1088,22 @@ def export_excel():
 
     for d in data:
 
+        # format berat / pcs
+        berat_text = (
+            "1 Pcs"
+            if d.berat == 1 and (
+                "Selimut" in d.layanan or
+                "Sepatu" in d.layanan or
+                "Boneka" in d.layanan or
+                "Bed Cover" in d.layanan
+            )
+            else str(d.berat) + " Kg"
+        )
+
         rows.append({
             "Nama": d.nama,
             "Layanan": d.layanan,
-            "Berat": d.berat,
+            "Berat": berat_text,
             "Total": d.total,
             "Tanggal": d.created_at.strftime("%d-%m-%Y")
         })
@@ -1070,7 +1118,6 @@ def export_excel():
         path,
         as_attachment=True
     )
-
 # ================= EXPORT PDF =================
 
 @app.route("/export/pdf")
@@ -1103,7 +1150,16 @@ def export_pdf():
         table_data.append([
             d.nama,
             d.layanan,
-            str(d.berat),
+            (
+            "1 Pcs"
+            if d.berat == 1 and (
+                "Selimut" in d.layanan or
+                "Sepatu" in d.layanan or
+                "Boneka" in d.layanan or
+                "Bed Cover" in d.layanan
+            )
+            else str(d.berat) + " Kg"
+        ),
             f"Rp {d.total}",
             d.created_at.strftime("%d-%m-%Y")
         ])
@@ -1167,7 +1223,14 @@ def print_struk(id):
 
     Nama    : {o.nama}<br>
     Layanan : {o.layanan}<br>
-    Berat   : {o.berat} kg<br>
+    Berat   : {
+                "1 Pcs" if o.berat == 1 and (
+                "Selimut" in o.layanan or
+                "Sepatu" in o.layanan or
+                "Boneka" in o.layanan
+                )
+                else str(o.berat) + " Kg"
+                }<br>
     Diskon  : {o.diskon}%<br>
     Total   : Rp {o.total}<br>
 
@@ -1249,7 +1312,7 @@ def init():
     ))
 
     db.session.add(Layanan(
-        nama="Selimut Bad Cover",
+        nama="Bed Cover",
         harga=25000
     ))
 
